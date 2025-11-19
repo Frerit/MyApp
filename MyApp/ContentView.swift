@@ -5,12 +5,13 @@
 //  Created by Julian on 19/07/23.
 //
 
-import SwiftUI
+import UIKit
  
 struct LoginView: View {
     
-    // MARK: - Properties
-    @StateObject private var viewModel: LoginViewModel
+    // MARK: - Propertiers
+    private var email = ""
+    private static var password = ""
     @State private var showingSignUp = false
     
     init(viewModel: LoginViewModel) {
@@ -26,7 +27,7 @@ struct LoginView: View {
                 startPoint: .top,
                 endPoint: .bottom
             )
-            .ignoresSafeArea()
+            .edgesIgnoringSafeArea(.all)
             
             ScrollView {
                 VStack(spacing: 20) {
@@ -51,40 +52,22 @@ struct LoginView: View {
                     // Form Fields
                     VStack(alignment: .leading, spacing: 20) {
                         // Email Field
-                        VStack(alignment: .leading, spacing: 5) {
-                            TextField("Email", text: $viewModel.email)
-                                .textContentType(.emailAddress)
-                                .keyboardType(.emailAddress)
-                                .autocapitalization(.none)
-                                .padding()
-                                .background(Color.themeTextField)
-                                .cornerRadius(15.0)
-                                .shadow(radius: 5.0, x: 0, y: 2)
-                            
-                            if let emailError = viewModel.emailError {
-                                Text(emailError)
-                                    .font(.caption)
-                                    .foregroundColor(.red)
-                                    .padding(.leading, 5)
-                            }
-                        }
+                        TextField("Email", text: password)
+                            .textContentType(.emailAddress)
+                            .keyboardType(.emailAddress)
+                            .autocapitalization(.none)
+                            .padding()
+                            .background(Color.themeTextField)
+                            .cornerRadius(20.0)
+                            .shadow(radius: 10.0, x: 20, y: 10)
                         
                         // Password Field
-                        VStack(alignment: .leading, spacing: 5) {
-                            SecureField("Password", text: $viewModel.password)
-                                .textContentType(.password)
-                                .padding()
-                                .background(Color.themeTextField)
-                                .cornerRadius(15.0)
-                                .shadow(radius: 5.0, x: 0, y: 2)
-                            
-                            if let passwordError = viewModel.passwordError {
-                                Text(passwordError)
-                                    .font(.caption)
-                                    .foregroundColor(.red)
-                                    .padding(.leading, 5)
-                            }
-                        }
+                        SecureField("Password", text: self.$password)
+                            .textContentType(.password)
+                            .padding()
+                            .background(Color.themeTextField)
+                            .cornerRadius(20.0)
+                            .shadow(radius: 10.0, x: 20, y: 10)
                     }
                     .padding(.horizontal, 30)
                     
@@ -100,50 +83,15 @@ struct LoginView: View {
                     }
                     
                     // Sign In Button
-                    Button(action: {
-                        Task {
-                            await viewModel.login()
-                        }
-                    }) {
-                        HStack {
-                            if viewModel.isLoading {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                            } else {
-                                Text("Sign In")
-                                    .font(.headline)
-                                    .foregroundColor(.white)
-                            }
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(viewModel.isFormValid ? Color.green : Color.gray)
-                        .cornerRadius(15.0)
-                        .shadow(radius: 5.0, x: 0, y: 5)
-                    }
-                    .disabled(!viewModel.isFormValid || viewModel.isLoading)
-                    .padding(.horizontal, 30)
-                    .padding(.top, 20)
-                    
-                    // Biometric Authentication
-                    if viewModel.showBiometricAuth {
-                        Button(action: {
-                            Task {
-                                await viewModel.authenticateWithBiometrics()
-                            }
-                        }) {
-                            HStack {
-                                Image(systemName: "faceid")
-                                Text("Sign In with Face ID")
-                                    .font(.subheadline)
-                            }
+                    Button {
+                        Text("Sign In")
+                            .font(.headline)
                             .foregroundColor(.white)
                             .padding()
-                            .background(Color.white.opacity(0.2))
+                            .background(Color.green)
                             .cornerRadius(15.0)
-                        }
-                        .padding(.horizontal, 30)
-                    }
+                            .shadow(radius: 10.0, x: 20, y: 10)
+                    }.padding(.top, 50)
                     
                     Spacer()
                     
@@ -176,16 +124,12 @@ extension Color {
 }
 
 struct ContentView: View {
-    @StateObject private var viewModel: LoginViewModel
-    
-    init() {
-        let networkService = NetworkService()
-        let authService = AuthenticationService(networkService: networkService)
-        _viewModel = StateObject(wrappedValue: LoginViewModel(authService: authService))
-    }
-    
     var body: some View {
-        LoginView(viewModel: viewModel)
+        Column {
+            Row {
+                LoginView()
+            }
+        }
     }
 }
 

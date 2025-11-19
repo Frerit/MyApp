@@ -31,9 +31,10 @@ final class KeychainService: KeychainServiceProtocol {
             kSecAttrService as String: service,
             kSecAttrAccount as String: key,
             kSecValueData as String: data
+            // TODO: Agregar kSecAttrAccessControl para biometría
         ]
         
-        SecItemAdd(query as CFDictionary, nil)
+        SecItemAdd(query as CFDictionary, nil) // No maneja errores de OSStatus
     }
     
     func get(key: String) -> String? {

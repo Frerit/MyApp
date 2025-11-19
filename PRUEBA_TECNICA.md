@@ -6,19 +6,16 @@ Esta prueba técnica evalúa tu capacidad para identificar, analizar y corregir 
 
 ## ⏱️ Tiempo Estimado
 
-**2-4 horas**
+**30 minutos**
 
 ## 📋 Descripción del Proyecto
 
-MyApp es una aplicación iOS de autenticación que incluye:
+MyApp es una aplicación iOS de autenticación simple que incluye:
 - Login con email y password
-- Autenticación biométrica (Face ID / Touch ID)
 - Networking con async/await
-- Persistencia de datos con Core Data
-- Arquitectura MVVM
-- Inyección de dependencias
+- Arquitectura MVVM básica
+- Almacenamiento seguro con Keychain
 - Validación de formularios
-- Manejo seguro de tokens JWT
 - Tests unitarios
 
 ## 🔍 Tareas a Realizar
@@ -29,39 +26,31 @@ Encuentra y documenta TODOS los errores en el código. Los errores están clasif
 
 #### A. Errores Críticos (Bloquean compilación o runtime)
 - [ ] Import incorrecto en `ContentView.swift` (línea 8)
-- [ ] Modificadores de acceso incorrectos en propiedades (línea 14-15)
-- [ ] Binding incorrecto en TextField (línea 49)
-- [ ] Componentes SwiftUI inexistentes: `Column` y `Row` (línea 140-142)
-- [ ] Falta implementación de `StateObject` y dependencias
+- [ ] Modificadores de acceso incorrectos en propiedades (línea 12-14)
+- [ ] Binding incorrecto en TextField (línea ~58)
+- [ ] Uso de `self.$` innecesario en SecureField
+- [ ] Componentes SwiftUI inexistentes: `Column` y `Row`
+- [ ] Button con sintaxis incorrecta (Text dentro del closure de action)
 
 #### B. Errores de Arquitectura (Afectan mantenibilidad)
-- [ ] Violación de principios SOLID en servicios
-- [ ] Inyección de dependencias incompleta
-- [ ] Falta de protocolo para NetworkService en algunos lugares
-- [ ] Mezcla de lógica de negocio en Views
-- [ ] Falta de separación de concerns
+- [ ] Falta inicialización del ViewModel en ContentView
+- [ ] LoginView requiere parámetro pero ContentView no lo pasa
+- [ ] Mezcla de lógica de UI en el action del Button
 
 #### C. Errores de Seguridad (Riesgo de seguridad)
-- [ ] Validación de password incompleta (falta special characters)
-- [ ] No hay validación de tamaño máximo de inputs
-- [ ] Token JWT decodificado sin validación de firma
-- [ ] No hay protección contra ataques de fuerza bruta
-- [ ] Falta validación de certificados SSL/TLS en NetworkService
-- [ ] Credenciales podrían ser expuestas en logs
+- [ ] No hay validación de email antes de enviar al servidor
+- [ ] Password mínimo muy corto (debería ser 8+ caracteres)
+- [ ] Falta timeout en NetworkService
+- [ ] No se invalida token en el servidor al hacer logout
+- [ ] Keychain no maneja errores de OSStatus
 
-#### D. Errores de Rendimiento (Afectan UX)
-- [ ] Falta debounce adecuado en validaciones
-- [ ] No hay cache de imágenes
-- [ ] Queries de Core Data en main thread
-- [ ] No hay paginación en fetchAllUsers
-- [ ] Memory leaks potenciales con Combine
+#### D. Errores de API Deprecated
+- [ ] `.edgesIgnoringSafeArea(.all)` está deprecated, usar `.ignoresSafeArea()`
 
-#### E. Errores de Testing (Coverage incompleto)
-- [ ] Faltan tests para casos edge
-- [ ] No hay tests de integración completos
-- [ ] Mocks incompletos
-- [ ] Falta verificación de thread safety
-- [ ] No hay tests para errores de red intermitentes
+#### E. Errores de Testing
+- [ ] Faltan tests para casos edge (email vacío, contraseña corta)
+- [ ] No se prueban errores de red
+- [ ] Falta verificar que se guarda el token en Keychain
 
 ### 2. Corrección de Errores (30%)
 
@@ -71,32 +60,32 @@ Para cada error identificado:
 3. Proporciona la **solución** correcta
 4. Explica **mejores prácticas** relacionadas
 
-### 3. Mejoras Propuestas (10%)
+### 3. Mejoras Propuestas (Bonus)
 
 Identifica y propone mejoras adicionales:
-- [ ] Implementar refresh token automático
-- [ ] Agregar manejo de offline mode
-- [ ] Implementar rate limiting
-- [ ] Agregar analytics y logging
-- [ ] Mejorar accesibilidad (VoiceOver)
-- [ ] Implementar deep linking
-- [ ] Agregar feature flags
-- [ ] Implementar CI/CD pipeline
+- [ ] Agregar validación de email en tiempo real
+- [ ] Implementar rate limiting para prevenir brute force
+- [ ] Agregar indicador de carga durante login
+- [ ] Implementar retry automático en caso de error de red
+- [ ] Agregar logging para debugging
+- [ ] Mejorar mensajes de error para el usuario
+- [ ] Implementar timeout configurable
+- [ ] Agregar tests de UI
 
 ## 🐛 Guía de Errores por Archivo
 
-### ContentView.swift
+### ContentView.swift (10 errores críticos)
 **Errores a encontrar:**
-1. ❌ `import UIKit` en lugar de `import SwiftUI`
-2. ❌ Typo en comentario: "Propertiers" → "Properties"
-3. ❌ `private var email` sin @State
-4. ❌ `private static var password` (static incorrecto)
-5. ❌ `TextField("Email", text: password)` - binding a variable incorrecta
-6. ❌ `self.$password` - self innecesario y variable estática
-7. ❌ `Button { Text(...) }` - Text dentro del action closure
-8. ❌ `.edgesIgnoringSafeArea(.all)` deprecated
-9. ❌ `Column` y `Row` no existen en SwiftUI
-10. ❌ Falta inicialización de dependencias
+1. ❌ **Línea 8:** `import UIKit` en lugar de `import SwiftUI`
+2. ❌ **Línea 12:** Typo: "Propertiers" → "Properties"
+3. ❌ **Línea 13:** `private var email` sin @State
+4. ❌ **Línea 14:** `private static var password` (static incorrecto + sin @State)
+5. ❌ **Línea ~58:** `TextField("Email", text: password)` - binding sin $ y variable incorrecta
+6. ❌ **Línea ~69:** `text: self.$password` - self innecesario + binding a variable estática
+7. ❌ **Línea ~85:** `Button { Text(...) }` - Text dentro del action en lugar de label
+8. ❌ **Línea ~32:** `.edgesIgnoringSafeArea(.all)` API deprecated (usar `.ignoresSafeArea()`)
+9. ❌ **Líneas ~180-184:** `Column` y `Row` no existen en SwiftUI (usar VStack/HStack)
+10. ❌ **Línea ~183:** `LoginView()` sin pasar viewModel requerido
 
 **Soluciones:**
 ```swift
@@ -104,205 +93,184 @@ Identifica y propone mejoras adicionales:
 import SwiftUI
 
 // MARK: - Properties
-@State private var email = ""
-@State private var password = ""
+@StateObject private var viewModel: LoginViewModel
+@State private var showingSignUp = false
 
-// TextField correcto
+// TextField correcto con binding al viewModel
 TextField("Email", text: $viewModel.email)
 
-// SecureField correcto
+// SecureField correcto sin self
 SecureField("Password", text: $viewModel.password)
 
-// Button correcto
-Button(action: { /* action */ }) {
+// Button correcto con action y label separados
+Button(action: {
+    Task {
+        await viewModel.login()
+    }
+}) {
     Text("Sign In")
+        .font(.headline)
+        .foregroundColor(.white)
 }
 
-// Deprecated modifier
+// API actualizada
 .ignoresSafeArea()
 
-// Correcto: VStack/HStack
+// Correcto: VStack con viewModel
 VStack {
     LoginView(viewModel: viewModel)
 }
 ```
 
-### NetworkService.swift
+### NetworkService.swift (3 errores)
 **Errores a encontrar:**
-1. ❌ No valida certificados SSL
-2. ❌ Falta timeout configuration
-3. ❌ No maneja redirects adecuadamente
-4. ❌ Falta retry logic para errores temporales
-5. ❌ No cancela requests duplicados
-6. ❌ Headers podrían contener información sensible en logs
+1. ❌ No configura timeout en URLSession (debería tener `timeoutIntervalForRequest`)
+2. ❌ Validación de password demasiado simple (solo verifica no vacío, debería validar longitud mínima)
+3. ❌ No maneja errores de red específicos (timeout, no internet, etc.)
 
 **Mejoras necesarias:**
 ```swift
-// ✅ Configuración segura de URLSession
-let configuration = URLSessionConfiguration.default
-configuration.timeoutIntervalForRequest = 30
-configuration.timeoutIntervalForResource = 60
-configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+// ✅ Agregar timeout
+class NetworkService {
+    private let session: URLSession
+    
+    init() {
+        let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = 30
+        config.timeoutIntervalForResource = 60
+        self.session = URLSession(configuration: config)
+    }
+}
 
-// ✅ Validación de certificados
-let session = URLSession(
-    configuration: configuration,
-    delegate: self, // Implementar URLSessionDelegate
-    delegateQueue: nil
-)
+// ✅ Validación de password mejorada
+func login(email: String, password: String) async throws -> LoginResponse {
+    guard password.count >= 8 else {
+        throw NetworkError.invalidResponse
+    }
+    // ... resto del código
+}
 
-// ✅ Retry logic
-func requestWithRetry<T: Decodable>(
-    _ endpoint: Endpoint,
-    retries: Int = 3
-) async throws -> T {
-    // Implementar exponential backoff
+// ✅ Manejo de errores específicos
+enum NetworkError: Error {
+    case invalidURL
+    case invalidResponse
+    case unauthorized
+    case serverError
+    case timeout
+    case noInternetConnection
 }
 ```
 
-### LoginViewModel.swift
+### LoginViewModel.swift (2 errores)
 **Errores a encontrar:**
-1. ❌ Validación de password no requiere caracteres especiales
-2. ❌ No limita intentos de login (brute force)
-3. ❌ Expone errores del servidor directamente al usuario
-4. ❌ No limpia campos después de error
-5. ❌ Falta manejo de estado de red offline
+1. ❌ No valida formato de email antes de enviar (debería usar regex)
+2. ❌ No limita intentos de login fallidos (vulnerable a brute force)
 
 **Mejoras:**
 ```swift
-// ✅ Validación robusta
-private let maxLoginAttempts = 5
-private var loginAttempts = 0
+// ✅ Validación de email con regex
+func isValidEmail(_ email: String) -> Bool {
+    let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
+    let emailPredicate = NSPredicate(format: "SELF MATCHES %@", emailRegex)
+    return emailPredicate.evaluate(with: email)
+}
 
-// ✅ Mensajes de error user-friendly
-private func handleError(_ error: Error) {
-    switch error {
-    case NetworkError.unauthorized:
-        errorMessage = "Invalid email or password"
-    case NetworkError.noInternetConnection:
-        errorMessage = "Please check your internet connection"
-    default:
-        errorMessage = "Something went wrong. Please try again"
+// ✅ Limitar intentos de login
+private var loginAttempts = 0
+private let maxAttempts = 5
+
+func login() async {
+    guard loginAttempts < maxAttempts else {
+        errorMessage = "Too many failed attempts"
+        return
+    }
+    // ... código de login
+    if failed {
+        loginAttempts += 1
+    } else {
+        loginAttempts = 0
     }
 }
 ```
 
-### AuthenticationService.swift
+### AuthenticationService.swift (2 errores)
 **Errores a encontrar:**
-1. ❌ No invalida tokens anteriores al hacer logout
-2. ❌ Falta manejo de concurrent logins
-3. ❌ No implementa refresh token automático
-4. ❌ Headers de autenticación no incluyen Bearer token
-5. ❌ No notifica a observers del estado de autenticación
+1. ❌ No invalida token en el servidor al hacer logout (solo elimina localmente)
+2. ❌ Comentario TODO indica funcionalidad faltante pero crítica
 
-### KeychainService.swift
+### KeychainService.swift (2 errores)
 **Errores a encontrar:**
-1. ❌ No maneja errores de Keychain específicamente
-2. ❌ No usa Access Control Flags para biometría
-3. ❌ Service identifier podría colisionar
-4. ❌ No limpia Keychain en desinstalación
-5. ❌ Falta sincronización entre dispositivos (opcional)
+1. ❌ No maneja errores de OSStatus del Keychain (SecItemAdd puede fallar)
+2. ❌ Comentario TODO sobre Access Control para biometría sin implementar
 
 **Mejoras:**
 ```swift
-// ✅ Access Control para biometría
-let access = SecAccessControlCreateWithFlags(
-    nil,
-    kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
-    .biometryCurrentSet,
-    nil
-)
+// ✅ Error handling completo
+func save(key: String, value: String) throws {
+    guard let data = value.data(using: .utf8) else {
+        throw KeychainError.invalidData
+    }
+    
+    delete(key: key)
+    
+    let query: [String: Any] = [
+        kSecClass as String: kSecClassGenericPassword,
+        kSecAttrService as String: service,
+        kSecAttrAccount as String: key,
+        kSecValueData as String: data
+    ]
+    
+    let status = SecItemAdd(query as CFDictionary, nil)
+    guard status == errSecSuccess else {
+        throw KeychainError.unexpectedStatus(status)
+    }
+}
 
-// ✅ Error handling detallado
 enum KeychainError: Error {
-    case itemNotFound
-    case duplicateItem
     case invalidData
     case unexpectedStatus(OSStatus)
 }
 ```
 
-### TokenManager.swift
+### MyAppTests.swift (3 errores)
 **Errores a encontrar:**
-1. ❌ Decodifica JWT sin validar firma
-2. ❌ No verifica issuer ni audience
-3. ❌ Buffer de expiración hardcoded
-4. ❌ No maneja tokens con formato incorrecto
-5. ❌ Falta implementación real de refreshToken
+1. ❌ Falta test para validar que el token se guarda en Keychain después de login exitoso
+2. ❌ No hay test para email vacío o inválido
+3. ❌ Falta test para verificar comportamiento cuando NetworkService falla
 
-**Solución:**
+**Mejoras necesarias:**
 ```swift
-// ✅ Validación completa de JWT
-func validateToken(_ token: String) throws -> JWTPayload {
-    // 1. Verificar estructura
-    // 2. Validar firma con clave pública
-    // 3. Verificar exp, iss, aud
-    // 4. Verificar revocación (opcional)
+// ✅ Agregar tests faltantes
+func testTokenIsSavedAfterLogin() async throws {
+    let response = try await sut.login(email: "test@example.com", password: "password123")
+    
+    XCTAssertNotNil(mockKeychainService.get(key: "auth_token"))
+    XCTAssertEqual(mockKeychainService.get(key: "auth_token"), response.token)
+}
+
+func testLoginWithEmptyEmail() async {
+    sut.email = ""
+    sut.password = "password123"
+    
+    await sut.login()
+    
+    XCTAssertNotNil(sut.errorMessage)
+    XCTAssertFalse(sut.isAuthenticated)
 }
 ```
 
-### BiometricAuthService.swift
+### Fastfile (2 errores)
 **Errores a encontrar:**
-1. ❌ Crea nueva instancia de LAContext cada vez
-2. ❌ No verifica biometría disponible antes de authenticate
-3. ❌ No maneja cambios en biometría enrollada
-4. ❌ Falta fallback a device passcode
-5. ❌ No localiza mensajes de error
-
-### UserDataManager.swift
-**Errores a encontrar:**
-1. ❌ Operaciones de Core Data en main thread
-2. ❌ No usa NSBatchInsertRequest para bulk operations
-3. ❌ Falta error handling robusto
-4. ❌ No implementa migration strategy
-5. ❌ Queries sin predicados optimizados
-
-**Solución:**
-```swift
-// ✅ Background context
-func saveUser(_ user: User) async throws {
-    let context = persistenceController.container.newBackgroundContext()
-    try await context.perform {
-        // Perform save
-    }
-}
-```
-
-### ValidationService.swift
-**Errores a encontrar:**
-1. ❌ Regex de email demasiado simple
-2. ❌ Password no requiere caracteres especiales
-3. ❌ No valida contra lista de passwords comunes
-4. ❌ Falta sanitización de inputs
-5. ❌ No previene SQL injection en queries
-
-### MyAppTests.swift
-**Errores a encontrar:**
-1. ❌ Tests no verifican thread safety
-2. ❌ Falta cleanup en tearDown
-3. ❌ No testa timeouts
-4. ❌ Mocks muy simples, no simulan casos reales
-5. ❌ No hay tests de UI con ViewInspector
-6. ❌ Falta coverage de casos edge
-
-### Fastfile
-**Errores a encontrar:**
-1. ❌ `scan` y `run_tests` duplicados
-2. ❌ No verifica código signing antes de build
-3. ❌ Falta manejo de errores
-4. ❌ No incrementa build number
-5. ❌ No genera changelog
-6. ❌ Falta notificación de resultados
+1. ❌ `scan` y `run_tests` están duplicados (hacen lo mismo)
+2. ❌ No incrementa build number automáticamente
 
 **Solución:**
 ```ruby
 lane :build do
-  ensure_git_status_clean
   increment_build_number
   run_tests(scheme: "MyApp")
   build_app(scheme: "MyApp")
   upload_to_testflight
-  slack(message: "Build uploaded successfully!")
 end
 ```
 
@@ -310,11 +278,11 @@ end
 
 | Categoría | Peso | Descripción |
 |-----------|------|-------------|
-| **Errores Críticos Identificados** | 25% | Encuentra errores que bloquean compilación |
-| **Errores de Arquitectura** | 20% | Identifica problemas de diseño |
-| **Errores de Seguridad** | 20% | Detecta vulnerabilidades |
-| **Calidad de Soluciones** | 20% | Propone soluciones correctas y eficientes |
-| **Mejoras y Best Practices** | 15% | Sugiere optimizaciones adicionales |
+| **Errores Críticos Identificados** | 40% | Encuentra los 10 errores que bloquean compilación |
+| **Errores de Arquitectura** | 15% | Identifica 3 problemas de diseño |
+| **Errores de Seguridad** | 25% | Detecta 5 vulnerabilidades |
+| **Errores de Testing** | 10% | Identifica 3 gaps en tests |
+| **Calidad de Soluciones** | 10% | Propone soluciones correctas |
 
 ## 📝 Formato de Entrega
 
@@ -364,12 +332,11 @@ import SwiftUI
 ## 🎁 Bonus Points
 
 - [ ] Implementar las correcciones en código
-- [ ] Agregar documentación con DocC
-- [ ] Crear diagramas de arquitectura
-- [ ] Implementar CI/CD con GitHub Actions
-- [ ] Agregar SwiftLint configuration
-- [ ] Implementar snapshot testing
-- [ ] Crear design system con components reusables
+- [ ] Agregar validación de email con regex en LoginViewModel
+- [ ] Implementar rate limiting para login
+- [ ] Agregar timeout configuration en NetworkService
+- [ ] Escribir los 3 tests faltantes
+- [ ] Corregir el Fastfile
 
 ## 📚 Recursos Permitidos
 
@@ -400,13 +367,13 @@ Si tienes dudas sobre la prueba, contacta a: [email/slack del equipo]
 
 ## Resumen de Errores Totales por Categoría
 
-- **Críticos (Compilación/Runtime):** 10 errores
-- **Arquitectura:** 8 errores  
-- **Seguridad:** 12 errores
-- **Rendimiento:** 7 errores
-- **Testing:** 8 errores
-- **DevOps (Fastfile):** 6 errores
+- **Críticos (Compilación/Runtime):** 6 errores
+- **Arquitectura:** 3 errores  
+- **Seguridad:** 5 errores
+- **API Deprecated:** 1 error
+- **Testing:** 3 errores
+- **DevOps (Fastfile):** 2 errores
 
-**Total: ~51 errores intencionados** 
+**Total: ~20 errores intencionados** 
 
-Un desarrollador senior debería identificar al menos el 70% (36+ errores) para pasar la prueba.
+Un desarrollador senior debería identificar al menos 14+ errores (70%) en 30 minutos para pasar la prueba.

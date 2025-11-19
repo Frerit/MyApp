@@ -23,5 +23,8 @@ platform :ios do
     build_app(scheme: "MyApp")
     sync_code_signing(type: "appstore")
     upload_to_testflight
+    # No incrementa build number
+    # No genera changelog
+    # No maneja errores
   end
 end
