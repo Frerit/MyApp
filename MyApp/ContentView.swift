@@ -4,71 +4,168 @@
 //
 //  Created by Julian on 19/07/23.
 //
- 
-import UIKit
+
+import SwiftUI
  
 struct LoginView: View {
     
-    // MARK: - Propertiers
-    private var email = ""
-    private static var password = ""
+    // MARK: - Properties
+    @StateObject private var viewModel: LoginViewModel
+    @State private var showingSignUp = false
+    
+    init(viewModel: LoginViewModel) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+    }
     
     // MARK: - View
     var body: some View {
-        VStack {
-            Text("iOS App")
-                .font(.largeTitle).foregroundColor(Color.white)
-                .padding([.top, .bottom], 40)
-                .shadow(radius: 10.0, x: 20, y: 10)
-            
-            Image("iosapptemplate")
-                .clipShape(Circle())
-                .overlay(Circle().stroke(Color.white, lineWidth: 4))
-                .shadow(radius: 10.0, x: -20, y: 10)
-                .padding(.bottom, 50)
-            
-            VStack(alignment: .leading, spacing: 15) {
-                TextField("Email", text: password)
-                    .padding()
-                    .background(Color.themeTextField)
-                    .cornerRadius(20.0)
-                    .shadow(radius: 10.0, x: 20, y: 10)
-                
-                SecureField("Password", text: self.$password)
-                    .padding()
-                    .background(Color.themeTextField)
-                    .cornerRadius(20.0)
-                    .shadow(radius: 10.0, x: 20, y: 10)
-            }.padding([.leading, .trailing], 27.5)
-            
-            Button {
-                Text("Sign In")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .padding()
-                    .background(Color.green)
-                    .cornerRadius(15.0)
-                    .shadow(radius: 10.0, x: 20, y: 10)
-            }.padding(.top, 50)
-            
-            Spacer()
-            HStack(spacing: 0) {
-                Text("Don't have an account? ")
-                Button(action: {}) {
-                    Text("Sign Up")
-                        .foregroundColor(.black)
-                }
-            }
-        }
-        .background(
-            LinearGradient(gradient:
-                Gradient(colors:
-                            [.purple, .blue]
-                ),
+        ZStack {
+            // Background gradient
+            LinearGradient(
+                gradient: Gradient(colors: [.purple, .blue]),
                 startPoint: .top,
                 endPoint: .bottom
             )
-         .edgesIgnoringSafeArea(.all))
+            .ignoresSafeArea()
+            
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Header
+                    Text("iOS App")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                        .padding(.top, 40)
+                        .shadow(radius: 10.0, x: 20, y: 10)
+                    
+                    // App Icon
+                    Image(systemName: "person.circle.fill")
+                        .resizable()
+                        .frame(width: 120, height: 120)
+                        .foregroundColor(.white)
+                        .clipShape(Circle())
+                        .overlay(Circle().stroke(Color.white, lineWidth: 4))
+                        .shadow(radius: 10.0, x: -20, y: 10)
+                        .padding(.bottom, 30)
+                    
+                    // Form Fields
+                    VStack(alignment: .leading, spacing: 20) {
+                        // Email Field
+                        VStack(alignment: .leading, spacing: 5) {
+                            TextField("Email", text: $viewModel.email)
+                                .textContentType(.emailAddress)
+                                .keyboardType(.emailAddress)
+                                .autocapitalization(.none)
+                                .padding()
+                                .background(Color.themeTextField)
+                                .cornerRadius(15.0)
+                                .shadow(radius: 5.0, x: 0, y: 2)
+                            
+                            if let emailError = viewModel.emailError {
+                                Text(emailError)
+                                    .font(.caption)
+                                    .foregroundColor(.red)
+                                    .padding(.leading, 5)
+                            }
+                        }
+                        
+                        // Password Field
+                        VStack(alignment: .leading, spacing: 5) {
+                            SecureField("Password", text: $viewModel.password)
+                                .textContentType(.password)
+                                .padding()
+                                .background(Color.themeTextField)
+                                .cornerRadius(15.0)
+                                .shadow(radius: 5.0, x: 0, y: 2)
+                            
+                            if let passwordError = viewModel.passwordError {
+                                Text(passwordError)
+                                    .font(.caption)
+                                    .foregroundColor(.red)
+                                    .padding(.leading, 5)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 30)
+                    
+                    // Error Message
+                    if let errorMessage = viewModel.errorMessage {
+                        Text(errorMessage)
+                            .font(.subheadline)
+                            .foregroundColor(.red)
+                            .padding()
+                            .background(Color.white.opacity(0.9))
+                            .cornerRadius(10)
+                            .padding(.horizontal, 30)
+                    }
+                    
+                    // Sign In Button
+                    Button(action: {
+                        Task {
+                            await viewModel.login()
+                        }
+                    }) {
+                        HStack {
+                            if viewModel.isLoading {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            } else {
+                                Text("Sign In")
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(viewModel.isFormValid ? Color.green : Color.gray)
+                        .cornerRadius(15.0)
+                        .shadow(radius: 5.0, x: 0, y: 5)
+                    }
+                    .disabled(!viewModel.isFormValid || viewModel.isLoading)
+                    .padding(.horizontal, 30)
+                    .padding(.top, 20)
+                    
+                    // Biometric Authentication
+                    if viewModel.showBiometricAuth {
+                        Button(action: {
+                            Task {
+                                await viewModel.authenticateWithBiometrics()
+                            }
+                        }) {
+                            HStack {
+                                Image(systemName: "faceid")
+                                Text("Sign In with Face ID")
+                                    .font(.subheadline)
+                            }
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Color.white.opacity(0.2))
+                            .cornerRadius(15.0)
+                        }
+                        .padding(.horizontal, 30)
+                    }
+                    
+                    Spacer()
+                    
+                    // Sign Up Link
+                    HStack(spacing: 5) {
+                        Text("Don't have an account?")
+                            .foregroundColor(.white)
+                        Button(action: {
+                            showingSignUp = true
+                        }) {
+                            Text("Sign Up")
+                                .fontWeight(.bold)
+                                .foregroundColor(.white)
+                        }
+                    }
+                    .padding(.bottom, 30)
+                }
+            }
+        }
+        .sheet(isPresented: $showingSignUp) {
+            Text("Sign Up View")
+        }
     }
 }
 
@@ -78,14 +175,17 @@ extension Color {
     }
 }
 
-
 struct ContentView: View {
+    @StateObject private var viewModel: LoginViewModel
+    
+    init() {
+        let networkService = NetworkService()
+        let authService = AuthenticationService(networkService: networkService)
+        _viewModel = StateObject(wrappedValue: LoginViewModel(authService: authService))
+    }
+    
     var body: some View {
-        Column {
-            Row {
-                LoginView()
-            }
-        }
+        LoginView(viewModel: viewModel)
     }
 }
 
